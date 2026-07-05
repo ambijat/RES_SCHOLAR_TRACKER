@@ -1,0 +1,130 @@
+{
+  "id": "./",
+  "lang": "en-GB",
+  "name": "RES Scholar Tracker",
+  "short_name": "RES Scholar",
+  "description": "Tap-first research supervision tracker for RAC, chapter, and financial signature activity.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
+  "background_color": "#0c0e0d",
+  "theme_color": "#0c0e0d",
+  "orientation": "portrait",
+  "launch_handler": {
+    "client_mode": [
+      "navigate-existing",
+      "auto"
+    ]
+  },
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "assets/screenshots/phone-01.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Tap-first scholar tracking dashboard"
+    },
+    {
+      "src": "assets/screenshots/tablet-7-01.png",
+      "sizes": "1200x1920",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Dark dashboard for supervision activity logging"
+    }
+  ],
+  "categories": [
+    "education",
+    "productivity"
+  ],
+  "shortcuts": [
+    {
+      "name": "Log Academic Activity",
+      "short_name": "Academic",
+      "description": "Open the academic workflow logger.",
+      "url": "./?group=academic"
+    },
+    {
+      "name": "Log Financial Activity",
+      "short_name": "Financial",
+      "description": "Open the financial signature workflow logger.",
+      "url": "./?group=financial"
+    }
+  ],
+  "share_target": {
+    "action": "./",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "documents",
+          "accept": [
+            "application/json",
+            "text/csv"
+          ]
+        }
+      ]
+    }
+  },
+  "file_handlers": [
+    {
+      "action": "./",
+      "accept": {
+        "application/json": [
+          ".json"
+        ],
+        "text/csv": [
+          ".csv"
+        ]
+      }
+    }
+  ],
+  "protocol_handlers": [
+    {
+      "protocol": "web+resscholar",
+      "url": "./?protocol=%s"
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.resscholar.tracker",
+      "id": "com.resscholar.tracker"
+    }
+  ]
+}

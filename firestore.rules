@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSupervisor() {
+      return isSignedIn() && request.auth.token.role == "supervisor";
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    match /students/{studentId} {
+      allow read, write: if isSupervisor() || isOwner(resource.data.uid);
+    }
+
+    match /rac_sessions/{sessionId} {
+      allow read: if isSupervisor() || isOwner(resource.data.studentId);
+      allow write: if isSupervisor();
+    }
+
+    match /rac_outcomes/{outcomeId} {
+      allow read: if isSupervisor() || isOwner(resource.data.studentId);
+      allow write: if isSupervisor();
+    }
+
+    match /financial_items/{itemId} {
+      allow read: if isSupervisor() || isOwner(resource.data.studentId);
+      allow create: if isSupervisor() || (isOwner(request.resource.data.studentId) && !request.resource.data.isLockedAfterSignature);
+      allow update: if isSupervisor() || (isOwner(resource.data.studentId) && !resource.data.isLockedAfterSignature);
+      allow delete: if isSupervisor();
+    }
+
+    match /signature_requests/{requestId} {
+      allow read: if isSupervisor() || isOwner(resource.data.studentId);
+      allow create: if isSupervisor() || isOwner(request.resource.data.studentId);
+      allow update: if isSupervisor();
+      allow delete: if isSupervisor();
+    }
+  }
+}

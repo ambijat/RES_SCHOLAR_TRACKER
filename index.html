@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0c0e0d" />
+  <meta name="description" content="Tap-first research supervision tracker for RAC, chapter, and financial signature activity." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="RES Scholar" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png" />
+  <title>RES Scholar Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Hanken+Grotesk:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header">
+      <p class="kicker">RES Scholar Log</p>
+      <h1>Scholar Tracker</h1>
+      <p id="clock" class="clock">Loading local time...</p>
+      <p class="subtitle">Select a workflow group, then tap an item to stamp the scholar record.</p>
+    </header>
+
+    <section class="session-panel" aria-label="Student session">
+      <label class="student-field">
+        <span>Student</span>
+        <div class="student-row-input">
+          <select id="studentName" autocomplete="name"></select>
+          <button id="openStudents" class="icon-button" type="button" aria-label="Manage students">&#9881;</button>
+          <button id="openDocuments" class="icon-button" type="button" aria-label="Manage documents">&#128196;</button>
+          <button id="openPublications" class="icon-button" type="button" aria-label="Manage publications">&#128218;</button>
+        </div>
+      </label>
+      <label>
+        <span>Semester</span>
+        <input id="semesterNumber" type="number" min="1" max="12" value="3" />
+      </label>
+      <label>
+        <span>Chapter</span>
+        <select id="chapterNumber">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3" selected>3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="summary-grid" aria-label="Summary">
+      <button id="meetingPunch" class="summary-card punch-card" type="button">
+        <span>Meeting Today</span>
+        <strong id="meetingPunchState">Tap to log</strong>
+      </button>
+      <article class="summary-card">
+        <span>Last Meeting</span>
+        <strong id="lastMeeting">No meetings yet</strong>
+      </article>
+      <button id="openMessage" class="summary-card message-card" type="button">
+        <span>Send Message</span>
+        <strong>Choose preset</strong>
+      </button>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2>Workflow Group</h2>
+        <span id="entryCount">0 entries</span>
+      </div>
+      <div id="groupSelector" class="group-grid"></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2 id="activeGroupTitle">Academic Review Workflow</h2>
+        <span id="activeGroupMeta">Tap to log</span>
+      </div>
+      <div id="itemSelector" class="item-grid"></div>
+    </section>
+
+    <section class="panel insights-panel">
+      <details>
+        <summary class="section-head">
+          <h2>Supervisor Snapshot</h2>
+          <span class="chevron" aria-hidden="true">&#9662;</span>
+        </summary>
+        <div class="details-body">
+          <p id="snapshotAcademic">Academic Review: no activity logged yet.</p>
+          <p id="snapshotFinancial">Financial: no activity logged yet.</p>
+          <p id="snapshotGap">Contact gap: waiting for first research action.</p>
+          <p id="snapshotDocuments">Documents: none on file yet.</p>
+          <p id="snapshotPublications">Publications: none on file yet.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="panel history-panel">
+      <div class="section-head">
+        <h2>History</h2>
+        <button id="openExport" class="tool-button" type="button">Export</button>
+      </div>
+
+      <div class="filter-row" aria-label="Date filters">
+        <button class="filter-chip on" data-filter="ALL" type="button">All</button>
+        <button class="filter-chip" data-filter="TODAY" type="button">Today</button>
+        <button class="filter-chip" data-filter="7D" type="button">7 Days</button>
+        <button class="filter-chip" data-filter="30D" type="button">30 Days</button>
+      </div>
+
+      <div class="history-window">
+        <div id="history"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="exportModal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="exportTitle">
+      <div class="section-head">
+        <h2 id="exportTitle">Export Log</h2>
+        <button id="closeExport" class="icon-button" type="button" aria-label="Close">x</button>
+      </div>
+      <div class="filter-row">
+        <button id="formatCsv" class="filter-chip on" type="button">CSV</button>
+        <button id="formatJson" class="filter-chip" type="button">JSON</button>
+      </div>
+      <textarea id="exportText" spellcheck="false"></textarea>
+      <div class="modal-actions">
+        <button id="copyExport" type="button">Copy</button>
+        <button id="downloadExport" type="button">Download</button>
+        <button id="shareExport" type="button">Share</button>
+      </div>
+      <label class="import-line">
+        <span>Import CSV/JSON</span>
+        <input id="importFile" type="file" accept=".csv,.json,application/json,text/csv" />
+      </label>
+    </div>
+  </div>
+
+  <div id="studentsModal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="studentsTitle">
+      <div class="section-head">
+        <h2 id="studentsTitle">Manage Students</h2>
+        <button id="closeStudents" class="icon-button" type="button" aria-label="Close">x</button>
+      </div>
+
+      <div class="student-form">
+        <input id="studentFormName" placeholder="Name" autocomplete="off" />
+        <input id="studentFormEnrollment" type="date" placeholder="Enrollment date" />
+        <input id="studentFormSemester" type="number" min="1" max="12" placeholder="Semester" />
+        <input id="studentFormEnrolmentNo" placeholder="Enrolment No." autocomplete="off" />
+        <input id="studentFormTopic" placeholder="PhD Topic" autocomplete="off" />
+        <input id="studentFormChapterScheme" placeholder="Chapter scheme" autocomplete="off" />
+        <input id="studentFormNotes" placeholder="Notes" autocomplete="off" />
+        <button id="studentFormSave" type="button">Add Student</button>
+      </div>
+
+      <div id="studentsList" class="students-list"></div>
+
+      <div class="filter-row">
+        <button id="studentsExport" class="tool-button" type="button">Export CSV</button>
+        <label class="import-line inline">
+          <span>Import CSV</span>
+          <input id="studentsImportFile" type="file" accept=".csv,text/csv" />
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div id="documentsModal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="documentsTitle">
+      <div class="section-head">
+        <h2 id="documentsTitle">Manage Documents</h2>
+        <button id="closeDocuments" class="icon-button" type="button" aria-label="Close">x</button>
+      </div>
+
+      <div class="student-form">
+        <select id="documentFormStudent" autocomplete="off"></select>
+        <input id="documentFormSubject" placeholder="Subject (e.g. Chapter 3, SASC paper)" autocomplete="off" />
+        <input id="documentFormDocType" placeholder="Doc type (draft, folio, claim-form...)" autocomplete="off" />
+        <input id="documentFormVersion" placeholder="Version" autocomplete="off" />
+        <input id="documentFormFilename" placeholder="Filename" autocomplete="off" />
+        <input id="documentFormSizeKb" type="number" min="0" placeholder="Size (KB)" />
+        <input id="documentFormDate" type="date" placeholder="Date" />
+        <button id="documentFormSave" type="button">Add Document</button>
+      </div>
+
+      <div id="documentsList" class="students-list"></div>
+
+      <div class="filter-row">
+        <button id="documentsExport" class="tool-button" type="button">Export CSV</button>
+        <label class="import-line inline">
+          <span>Import CSV</span>
+          <input id="documentsImportFile" type="file" accept=".csv,text/csv" />
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div id="publicationsModal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="publicationsTitle">
+      <div class="section-head">
+        <h2 id="publicationsTitle">Manage Publications</h2>
+        <button id="closePublications" class="icon-button" type="button" aria-label="Close">x</button>
+      </div>
+
+      <div class="student-form">
+        <select id="publicationFormStudent" autocomplete="off"></select>
+        <input id="publicationFormTitle" placeholder="Title" autocomplete="off" />
+        <input id="publicationFormCoAuthors" placeholder="Co-authors" autocomplete="off" />
+        <input id="publicationFormTargetJournal" placeholder="Target journal" autocomplete="off" />
+        <select id="publicationFormStage">
+          <option value="Drafting">Drafting</option>
+          <option value="Compiling">Compiling</option>
+          <option value="Reference-gathering">Reference-gathering</option>
+          <option value="Track-changes">Track-changes</option>
+          <option value="Consent">Consent</option>
+          <option value="Submitted">Submitted</option>
+        </select>
+        <button id="publicationFormSave" type="button">Add Publication</button>
+      </div>
+
+      <div id="publicationsList" class="students-list"></div>
+
+      <div class="filter-row">
+        <button id="publicationsExport" class="tool-button" type="button">Export CSV</button>
+        <label class="import-line inline">
+          <span>Import CSV</span>
+          <input id="publicationsImportFile" type="file" accept=".csv,text/csv" />
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div id="messageModal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="messageTitle">
+      <div class="section-head">
+        <h2 id="messageTitle">Send Message</h2>
+        <button id="closeMessage" class="icon-button" type="button" aria-label="Close">x</button>
+      </div>
+      <div id="messagePresets" class="message-list"></div>
+    </div>
+  </div>
+
+  <div id="retrievalModal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="retrievalTitle">
+      <div class="section-head">
+        <h2 id="retrievalTitle">Retrieved Record</h2>
+        <button id="closeRetrieval" class="icon-button" type="button" aria-label="Close">x</button>
+      </div>
+      <div id="retrievalBody" class="retrieval-body"></div>
+    </div>
+  </div>
+
+  <div id="noteModal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="noteTitle">
+      <div class="section-head">
+        <h2 id="noteTitle">Add Note</h2>
+        <button id="closeNote" class="icon-button" type="button" aria-label="Close">x</button>
+      </div>
+      <textarea id="noteText" spellcheck="false" placeholder="Deadline phrase, filename/version, journal name..."></textarea>
+      <div class="modal-actions">
+        <button id="saveNote" type="button">Save Note</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden>
+    <span id="toastText">Logged</span>
+    <button id="undoLast" type="button">Undo</button>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js", { scope: "./" })
+          .then((registration) => {
+            if ("SyncManager" in window) {
+              registration.sync.register("res-scholar-background-sync").catch(() => {});
+            }
+
+            if ("PeriodicSyncManager" in window) {
+              navigator.permissions.query({ name: "periodic-background-sync" })
+                .then((status) => {
+                  if (status.state === "granted") {
+                    return registration.periodicSync.register("res-scholar-periodic-cache", {
+                      minInterval: 24 * 60 * 60 * 1000
+                    });
+                  }
+                  return undefined;
+                })
+                .catch(() => {});
+            }
+          })
+          .catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>

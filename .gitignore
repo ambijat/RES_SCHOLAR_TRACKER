@@ -1,0 +1,28 @@
+# Gradle
+.gradle/
+build/
+app/build/
+
+# Local toolchain bootstrap
+.tools/
+
+# Android local config
+local.properties
+
+# Release signing secrets
+keystore.properties
+app/release-upload-keystore.jks
+
+# PWABuilder Studio cloud outputs and signing material
+pwabuilder-output/
+*Google Play package.zip
+signing.keystore
+signing-key-info.txt
+android-settings.json
+
+# IDE
+.idea/
+*.iml
+.vscode/tasks.json
+
+# Sanity-check skill output

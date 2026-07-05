@@ -1,0 +1,49 @@
+{
+  "appVersion": "1.4.0.0",
+  "appVersionCode": 5,
+  "backgroundColor": "#0c0e0d",
+  "display": "standalone",
+  "enableNotifications": true,
+  "enableSiteSettingsShortcut": true,
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": false
+    },
+    "playBilling": {
+      "enabled": false
+    }
+  },
+  "host": "https://ambijat.github.io/RES_SCHOLAR_TRACKER/",
+  "iconUrl": "https://ambijat.github.io/RES_SCHOLAR_TRACKER/assets/icons/icon-512.png",
+  "maskableIconUrl": "https://ambijat.github.io/RES_SCHOLAR_TRACKER/assets/icons/icon-512.png",
+  "monochromeIconUrl": null,
+  "includeSourceCode": true,
+  "isChromeOSOnly": false,
+  "launcherName": "RES Scholar",
+  "name": "RES Scholar Tracker",
+  "navigationColor": "#0c0e0d",
+  "navigationColorDark": "#0c0e0d",
+  "navigationDividerColor": "#0c0e0d",
+  "navigationDividerColorDark": "#0c0e0d",
+  "orientation": "portrait",
+  "packageId": "com.resscholar.tracker",
+  "shortcuts": [],
+  "signing": {
+    "file": "REPLACE_WITH_UPLOAD_KEYSTORE_FILE_CONTENT_OR_SUPPORTED_REFERENCE",
+    "alias": "upload",
+    "fullName": "RES Scholar Tracker",
+    "organization": "RES",
+    "organizationalUnit": "Research",
+    "countryCode": "IN",
+    "keyPassword": "REPLACE_LOCALLY_ONLY",
+    "storePassword": "REPLACE_LOCALLY_ONLY"
+  },
+  "signingMode": "mine",
+  "splashScreenFadeOutDuration": 300,
+  "startUrl": "./",
+  "themeColor": "#0c0e0d",
+  "themeColorDark": "#0c0e0d",
+  "shareTarget": [],
+  "webManifestUrl": "https://ambijat.github.io/RES_SCHOLAR_TRACKER/manifest.json"
+}

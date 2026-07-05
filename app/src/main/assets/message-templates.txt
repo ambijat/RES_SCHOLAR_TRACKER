@@ -1,0 +1,19 @@
+Send Chapter Reminder
+
+Hi {{student}}, could you please send across your latest chapter draft at your earliest convenience? I'd like to review it before our next meeting.
+---
+Discuss Progress
+
+Hi {{student}}, let's find some time to discuss your research progress. Please share your availability this week.
+---
+RAC Reminder
+
+Hi {{student}}, please complete and submit your RAC form for this semester at the earliest.
+---
+HRA Reminder
+
+Hi {{student}}, kindly get your HRA bill signed soon so we can keep your account in order.
+---
+Meeting Confirmation
+
+Hi {{student}}, confirming our meeting today. Please let me know if the scheduled time still works for you.

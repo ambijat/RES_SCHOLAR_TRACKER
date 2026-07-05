@@ -95,6 +95,9 @@
           <p id="snapshotGap">Contact gap: waiting for first research action.</p>
           <p id="snapshotDocuments">Documents: none on file yet.</p>
           <p id="snapshotPublications">Publications: none on file yet.</p>
+          <div id="snapshotRetrieval" class="snapshot-window">
+            <div class="empty">Retrievals will appear here.</div>
+          </div>
         </div>
       </details>
     </section>
@@ -242,17 +245,11 @@
         <h2 id="messageTitle">Send Message</h2>
         <button id="closeMessage" class="icon-button" type="button" aria-label="Close">x</button>
       </div>
+      <label class="import-line inline">
+        <span>Email</span>
+        <input id="messageRecipientEmail" type="email" readonly placeholder="Select a student to fill email" />
+      </label>
       <div id="messagePresets" class="message-list"></div>
-    </div>
-  </div>
-
-  <div id="retrievalModal" class="modal" hidden>
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="retrievalTitle">
-      <div class="section-head">
-        <h2 id="retrievalTitle">Retrieved Record</h2>
-        <button id="closeRetrieval" class="icon-button" type="button" aria-label="Close">x</button>
-      </div>
-      <div id="retrievalBody" class="retrieval-body"></div>
     </div>
   </div>
 

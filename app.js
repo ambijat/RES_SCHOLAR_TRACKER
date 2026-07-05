@@ -19,7 +19,6 @@ const GROUPS = [
       { name: "Chapter Outline Approved", detail: "Selected chapter outline approved; begin structure work", type: "CHAPTER_OUTLINE_APPROVED", chapter: true, mode: "Logging" },
       { name: "Chapter Midcourse Reviewed", detail: "Mid-chapter progress reviewed and returned with suggestions", type: "CHAPTER_MIDCOURSE_REVIEWED", chapter: true, mode: "Logging" },
       { name: "Chapter Draft Reviewed", detail: "Draft received and returned with corrections or clearance", type: "CHAPTER_DRAFT_REVIEWED", chapter: true, mode: "Logging" },
-      { name: "Cohort/RAC Meeting", detail: "Formal cohort-level RAC meeting logged", type: "COHORT_MEETING", mode: "Logging" },
       { name: "Thesis Title and Chapter Scheme", detail: "Retrieve thesis title and approved chapter scheme from student CSV", type: "THESIS_TITLE_CHAPTER_SCHEME", mode: "Retrieval", retrieval: "THESIS_SCHEME" },
       { name: "Previous RAC Goals", detail: "Retrieve previous RAC goals from student record", type: "PREVIOUS_RAC_GOALS", mode: "Retrieval", retrieval: "RAC_GOALS" }
     ]
@@ -39,8 +38,9 @@ const GROUPS = [
     hex: "#37d68a",
     items: [
       { name: "Semester Registration Done", detail: "Semester registration completion logged", type: "SEMESTER_REGISTRATION_DONE", mode: "Logging" },
-      { name: "Form Forwarded", detail: "Administrative form forwarded", type: "FORM_FORWARDED", mode: "Logging" },
-      { name: "Reminder Sent", detail: "Follow-up reminder sent", type: "REMINDER_SENT", mode: "Logging" }
+      { name: "Cohort/RAC Meeting", detail: "Formal cohort-level RAC meeting logged", type: "COHORT_MEETING", mode: "Logging" },
+      { name: "Reminder Sent", detail: "Choose and send a reminder message preset", type: "REMINDER_SENT", mode: "Retrieval", retrieval: "REMINDER_MESSAGE" },
+      { name: "Form Forwarded", detail: "Administrative form forwarded", type: "FORM_FORWARDED", mode: "Logging" }
     ]
   }
 ];
@@ -65,6 +65,7 @@ const ui = {
   snapshotGap: $("#snapshotGap"),
   snapshotDocuments: $("#snapshotDocuments"),
   snapshotPublications: $("#snapshotPublications"),
+  snapshotRetrieval: $("#snapshotRetrieval"),
   history: $("#history"),
   openExport: $("#openExport"),
   exportModal: $("#exportModal"),
@@ -91,11 +92,8 @@ const ui = {
   studentsImportFile: $("#studentsImportFile"),
   messageModal: $("#messageModal"),
   closeMessage: $("#closeMessage"),
+  messageRecipientEmail: $("#messageRecipientEmail"),
   messagePresets: $("#messagePresets"),
-  retrievalModal: $("#retrievalModal"),
-  closeRetrieval: $("#closeRetrieval"),
-  retrievalTitle: $("#retrievalTitle"),
-  retrievalBody: $("#retrievalBody"),
   toast: $("#toast"),
   toastText: $("#toastText"),
   undoLast: $("#undoLast"),
@@ -148,9 +146,7 @@ const state = {
   toastTimer: null
 };
 
-const FALLBACK_STUDENTS = [
-  { id: entryId(), name: "Ananya Singh", enrollmentDate: "", semester: 3, enrolmentNo: "", topic: "", notes: "" }
-];
+const FALLBACK_STUDENTS = [];
 
 function itemName(item) {
   return typeof item === "string" ? item : item.name;
@@ -324,17 +320,27 @@ function currentStudentRecord() {
   return state.students.find((student) => student.name === context.student) || null;
 }
 
+async function refreshStudentSeed() {
+  await syncStudentsSeed();
+  renderStudentDropdown();
+  renderMessageRecipient();
+  renderAll();
+}
+
 function renderStudentDropdown() {
-  const options = state.students.map((student) => `
+  const studentOptions = state.students.map((student) => `
     <option value="${escapeHtml(student.name)}">${escapeHtml(student.name)}</option>
   `).join("");
+  const options = `<option value="" selected disabled>Select student</option>${studentOptions}`;
 
   [ui.studentName, ui.documentFormStudent, ui.publicationFormStudent].forEach((select) => {
     if (!select) return;
     const current = select.value;
     select.innerHTML = options;
-    if (state.students.some((student) => student.name === current)) {
+    if (current && state.students.some((student) => student.name === current)) {
       select.value = current;
+    } else if (select === ui.studentName) {
+      select.value = "";
     }
   });
 }
@@ -712,8 +718,32 @@ function renderMessagePresets() {
   }).join("");
 }
 
+function renderMessageRecipient() {
+  if (!ui.messageRecipientEmail) return;
+  const student = currentStudentRecord();
+  ui.messageRecipientEmail.value = student?.email || "";
+}
+
+function escapeHtmlAttribute(value) {
+  return escapeHtml(value).replace(/`/g, "&#96;");
+}
+
+function renderRetrievalWindow(title, bodyHtml) {
+  if (!ui.snapshotRetrieval) return;
+  ui.snapshotRetrieval.innerHTML = `
+    <div class="retrieval-window-head">
+      <strong>${escapeHtml(title)}</strong>
+      <span>Supervisor Snapshot</span>
+    </div>
+    <div class="retrieval-body">${bodyHtml}</div>
+  `;
+  const details = document.querySelector(".insights-panel details");
+  if (details) details.open = true;
+}
+
 function openMessageModal() {
   renderMessagePresets();
+  renderMessageRecipient();
   ui.messageModal.hidden = false;
 }
 
@@ -781,28 +811,38 @@ function retrievalParagraph(label, value) {
 function openRetrieval(item) {
   const student = currentStudentRecord();
   const studentName = currentContext().student;
-  ui.retrievalTitle.textContent = itemName(item);
   if (!student) {
-    ui.retrievalBody.innerHTML = `<div class="empty">No student record found for ${escapeHtml(studentName)}.</div>`;
-    ui.retrievalModal.hidden = false;
+    renderRetrievalWindow(itemName(item), `<div class="empty">No student record found for ${escapeHtml(studentName)}.</div>`);
     return;
   }
 
   if (item.retrieval === "THESIS_SCHEME") {
-    ui.retrievalBody.innerHTML = [
+    renderRetrievalWindow(itemName(item), [
       retrievalParagraph("Student", student.name),
       retrievalParagraph("Thesis Title", student.topic || student.thesisTitle),
       retrievalParagraph("Chapter Scheme", student.chapterScheme || "Not yet available in students.csv. Add a ChapterScheme column from the synopsis database export.")
-    ].join("");
+    ].join(""));
   } else if (item.retrieval === "RAC_GOALS") {
-    ui.retrievalBody.innerHTML = [
+    renderRetrievalWindow(itemName(item), [
       retrievalParagraph("Student", student.name),
       retrievalParagraph("Previous RAC Goals", student.notes || "No RAC goals are recorded in the student CSV notes.")
-    ].join("");
+    ].join(""));
+  } else if (item.retrieval === "REMINDER_MESSAGE") {
+    renderRetrievalWindow(itemName(item), [
+      retrievalParagraph("Sent Message", "Choose a preset to send the reminder message."),
+      `<div class="message-list">${state.templates.map((template, index) => {
+        const body = resolveTemplateBody(template.body);
+        return `
+          <button class="message-preset" type="button" data-template="${index}">
+            <strong>${escapeHtml(template.label)}</strong>
+            <span>${escapeHtml(body.length > 90 ? `${body.slice(0, 90)}...` : body)}</span>
+          </button>
+        `;
+      }).join("")}</div>`
+    ].join(""));
   } else {
-    ui.retrievalBody.innerHTML = `<div class="empty">No retrieval view is configured for this action yet.</div>`;
+    renderRetrievalWindow(itemName(item), `<div class="empty">No retrieval view is configured for this action yet.</div>`);
   }
-  ui.retrievalModal.hidden = false;
 }
 
 function handleItemAction(itemLabel) {
@@ -1127,9 +1167,10 @@ function parseCsv(text) {
 }
 
 function buildStudentsCsv() {
-  const header = ["Name", "EnrollmentDate", "Semester", "Topic", "EnrolmentNo", "ChapterScheme", "Notes"];
+  const header = ["Name", "Email", "EnrollmentDate", "Semester", "Topic", "EnrolmentNo", "ChapterScheme", "Notes"];
   const rows = state.students.map((student) => [
     student.name,
+    student.email || "",
     student.enrollmentDate,
     student.semester,
     student.topic,
@@ -1144,6 +1185,7 @@ function parseStudentsCsv(text) {
   return csvRecords(text)
     .map((record) => ({
       name: (record.Name || "").trim(),
+      email: (record.Email || "").trim(),
       enrollmentDate: record.EnrollmentDate || "",
       semester: record.Semester ? Number(record.Semester) : "",
       topic: record.Topic || "",
@@ -1318,6 +1360,7 @@ function renderAll() {
   saveContext();
   renderGroups();
   renderItems();
+  renderMessageRecipient();
   renderSummary();
   renderInsights();
   renderRegisterSnapshots();
@@ -1359,6 +1402,7 @@ function bindEvents() {
   ui.studentName.addEventListener("change", () => {
     const student = state.students.find((candidate) => candidate.name === ui.studentName.value);
     if (student && student.semester) ui.semesterNumber.value = student.semester;
+    renderMessageRecipient();
   });
 
   [ui.studentName, ui.semesterNumber, ui.chapterNumber].forEach((control) => {
@@ -1385,7 +1429,11 @@ function bindEvents() {
     if (!button) return;
     sendPreset(Number(button.dataset.template));
   });
-  ui.closeRetrieval.addEventListener("click", () => { ui.retrievalModal.hidden = true; });
+  ui.snapshotRetrieval.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-template]");
+    if (!button) return;
+    sendPreset(Number(button.dataset.template));
+  });
 
   ui.openStudents.addEventListener("click", openStudentsModal);
   ui.closeStudents.addEventListener("click", () => { ui.studentsModal.hidden = true; });
@@ -1425,6 +1473,13 @@ function bindEvents() {
 
   ui.closeNote.addEventListener("click", () => { ui.noteModal.hidden = true; state.noteEntryId = null; });
   ui.saveNote.addEventListener("click", saveNote);
+
+  document.addEventListener("keydown", (event) => {
+    if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "r") {
+      event.preventDefault();
+      refreshStudentSeed().catch(() => showToast("Student refresh failed", false));
+    }
+  });
 }
 
 function boot() {
